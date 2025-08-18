@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>YouTube Rank Quiz</title>
+  <style>
+    :root {
+      --bg: #000;
+      --fg: #eee;
+      --muted: #bbb;
+      --ok: #24cf6b;
+      --bad: #ff4d4f;
+      --card: #111;
+      --accent: #fff;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      display: grid;
+      place-items: center;
+    }
+    .container { width: min(100%, 980px); padding: 16px; }
+
+    /* Start-Screen */
+    .center-card {
+      display: grid; place-items: center;
+      height: 70vh;
+    }
+    .start-btn {
+      font-size: clamp(28px, 5vw, 56px);
+      padding: 18px 32px;
+      background: var(--accent);
+      color: #000;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: 800;
+      letter-spacing: .5px;
+      transition: transform .08s ease-in-out, filter .2s;
+    }
+    .start-btn:hover { transform: translateY(-1px); filter: brightness(0.95); }
+    .start-btn:active { transform: translateY(1px) scale(0.99); }
+
+    /* Quiz */
+    .hidden { display: none !important; }
+
+    .video-wrap {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #111;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 8px 30px rgba(0,0,0,.45);
+      margin-bottom: 16px;
+    }
+    .video-wrap iframe { width: 100%; height: 100%; border: 0; display:block; }
+
+    .answers {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .answer-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      border: 0;
+      border-radius: 14px;
+      font-size: clamp(14px, 2.5vw, 18px);
+      font-weight: 700;
+      color: #fff;
+      background: #222;
+      cursor: pointer;
+      transition: transform .06s ease, filter .15s ease;
+      box-shadow: 0 4px 16px rgba(0,0,0,.4);
+    }
+    .answer-btn img {
+      width: 60px;
+      height: 60px;
+      object-fit: contain;
+      margin-bottom: 6px;
+    }
+    .answer-btn:hover { transform: translateY(-1px); filter: brightness(1.1); }
+    .answer-btn:active { transform: translateY(1px) scale(.99); }
+    .answer-btn[disabled] { opacity: .6; cursor: not-allowed; }
+
+    .meta { color: var(--muted); font-size: 14px; margin: 6px 2px 2px; }
+
+    .feedback {
+      margin-top: 14px;
+      background: var(--card);
+      border: 1px solid #222;
+      padding: 14px;
+      border-radius: 14px;
+      line-height: 1.35;
+    }
+    .feedback h3 { margin: 0 0 8px; font-size: 18px; }
+    .tag { display:inline-block; padding:2px 8px; border-radius:999px; font-size:12px; font-weight:800; margin-left:8px }
+    .ok { background: color-mix(in oklab, var(--ok) 30%, #000); color:#b8ffd8; border:1px solid var(--ok); }
+    .bad { background: color-mix(in oklab, var(--bad) 25%, #000); color:#ffd8d8; border:1px solid var(--bad); }
+
+    .next-row { display:flex; justify-content: space-between; align-items:center; gap: 12px; margin-top: 12px; }
+    .next-btn, .restart-btn {
+      padding: 12px 18px; border-radius: 12px; border: 1px solid #333; background:#fff; color:#000; font-weight:800; cursor:pointer;
+    }
+
+    .score { font-weight: 800; }
+
+    @media (max-width: 520px) {
+      .answers { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+
+    <!-- Start Screen -->
+    <section id="startScreen" class="center-card">
+      <button class="start-btn" id="startBtn">Start</button>
+    </section>
+
+    <!-- Quiz Screen -->
+    <section id="quizScreen" class="hidden">
+      <div class="video-wrap">
+        <iframe id="ytFrame" src="" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+      </div>
+      <div class="meta">
+        <span id="progress">Video 1 / 1</span>
+      </div>
+      <div id="answers" class="answers"></div>
+
+      <div id="feedback" class="feedback hidden"></div>
+
+      <div class="next-row">
+        <div class="score">Punkte: <span id="score">0</span></div>
+        <button id="nextBtn" class="next-btn hidden">Weiter ▶</button>
+      </div>
+    </section>
+
+    <!-- End Screen -->
+    <section id="endScreen" class="center-card hidden">
+      <div style="text-align:center">
+        <h1 style="margin:0 0 8px">Fertig!</h1>
+        <p style="margin:0 0 16px">Dein Ergebnis: <span id="finalScore">0</span> / <span id="finalTotal">0</span></p>
+        <button id="restartBtn" class="restart-btn">Nochmal</button>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // ==============================
+    // KONFIGURATION
+    // ==============================
+    const QUESTIONS = [
+      {
+        youtubeId: "-lArx3J5aaw", 
+        correctIndex: 2,
+        results: [
+          "Iron","Bronze","Silver","Gold","Platinum","Diamond","Ascendant","Immortal","Radiant"
+        ]
+      }
+    ];
+
+    const RANK_IMAGES = [
+      "valorant_1.webp",
+      "valorant_2.webp",
+      "valorant_3.webp",
+      "valorant_4.webp",
+      "valorant_5.webp",
+      "valorant_6.webp",
+      "valorant_7.webp",
+      "valorant_8.webp",
+      "valorant_9.webp"
+    ];
+
+    const BUTTON_LABELS = [
+      "","","","","","","","",""
+    ];
+
+    const startScreen=document.getElementById('startScreen');
+    const quizScreen=document.getElementById('quizScreen');
+    const endScreen=document.getElementById('endScreen');
+
+    const startBtn=document.getElementById('startBtn');
+    const nextBtn=document.getElementById('nextBtn');
+    const restartBtn=document.getElementById('restartBtn');
+
+    const ytFrame=document.getElementById('ytFrame');
+    const answersEl=document.getElementById('answers');
+    const feedback=document.getElementById('feedback');
+    const progress=document.getElementById('progress');
+    const scoreEl=document.getElementById('score');
+    const finalScoreEl=document.getElementById('finalScore');
+    const finalTotalEl=document.getElementById('finalTotal');
+
+    let current=0, score=0, locked=false;
+
+    startBtn.addEventListener('click', ()=>{
+      startScreen.classList.add('hidden');
+      quizScreen.classList.remove('hidden');
+      current=0; score=0;
+      updateScore();
+      loadQuestion();
+    });
+
+    nextBtn.addEventListener('click', ()=>{
+      if(current<QUESTIONS.length-1){
+        current++;
+        loadQuestion();
+      } else {
+        finish();
+      }
+    });
+
+    restartBtn.addEventListener('click', ()=>{
+      endScreen.classList.add('hidden');
+      startScreen.classList.remove('hidden');
+    });
+
+    function loadQuestion(){
+      locked=false;
+      nextBtn.classList.add('hidden');
+      feedback.classList.add('hidden');
+      feedback.innerHTML='';
+
+      const q=QUESTIONS[current];
+      ytFrame.src=`https://www.youtube-nocookie.com/embed/${q.youtubeId}?rel=0&modestbranding=1&playsinline=1`;
+      progress.textContent=`Video ${current+1} / ${QUESTIONS.length}`;
+
+      answersEl.innerHTML='';
+      for(let i=0;i<9;i++){
+        const btn=document.createElement('button');
+        btn.className='answer-btn';
+        btn.innerHTML=`<img src="${RANK_IMAGES[i]}" alt="Rank ${i+1}"><span>${BUTTON_LABELS[i]}</span>`;
+        btn.addEventListener('click',()=>pickAnswer(i));
+        answersEl.appendChild(btn);
+      }
+    }
+
+    function pickAnswer(index){
+      if(locked) return; locked=true;
+      const q=QUESTIONS[current];
+      const correct=q.correctIndex; const isRight=index===correct;
+      if(isRight) score++;
+      updateScore();
+
+      feedback.innerHTML=`<h3>Deine Auswahl: <span class="tag ${isRight ? 'ok':'bad'}">${isRight?'Richtig':'Falsch'}</span></h3><div><strong>Ergebnis:</strong> ${q.results[index]}</div>`;
+      feedback.classList.remove('hidden');
+      nextBtn.classList.remove('hidden');
+    }
+
+    function finish(){
+      quizScreen.classList.add('hidden');
+      endScreen.classList.remove('hidden');
+      finalScoreEl.textContent=String(score);
+      finalTotalEl.textContent=String(QUESTIONS.length);
+      ytFrame.src='';
+    }
+
+    function updateScore(){scoreEl.textContent=String(score);}
+  </script>
+</body>
+</html>
