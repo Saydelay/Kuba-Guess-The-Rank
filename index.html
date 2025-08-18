@@ -63,10 +63,9 @@
     .answers {
       display: flex;
       justify-content: center;
-      flex-wrap: nowrap;   /* alles in einer Reihe */
+      flex-wrap: wrap;   /* alles in einer Reihe */
       gap: 8px;            /* Abstand zwischen den Buttons */
       margin-top: 12px;
-      overflow-x: auto;    /* falls zu viele, dann scrollbar */
     }
 
     .answer-btn {
@@ -163,24 +162,25 @@
         youtubeId: "-lArx3J5aaw",
         correctIndex: 2,
         results: [
-          "Iron","Bronze","Silver","Gold","Platinum","Diamond","Ascendant","Immortal","Radiant"
+          "Silver","Silver","Silver","Silver","Silver","Silver","Silver","Silver","Silver"
         ]
       },
       {
-        youtubeId: "-lArx3J5aaw",  // Youtube Video ID
+        youtubeId: "-lArx3J5aaw",
         correctIndex: 5,
         results: [
           "Iron","Bronze","Silver","Gold","Platinum","Diamond","Ascendant","Immortal","Radiant"
         ]
       },
       {
-        youtubeId: "-lArx3J5aaw",  // zweites Video
+        youtubeId: "-lArx3J5aaw",
         correctIndex: 7,
         results: [
           "Iron","Bronze","Silver","Gold","Platinum","Diamond","Ascendant","Immortal","Radiant"
         ]
       }
     ];
+
 
     const RANK_IMAGES = [
       "valorant_1.webp",
@@ -259,13 +259,29 @@
     }
 
     function pickAnswer(index){
-      if(locked) return; locked=true;
+      if(locked) return; 
+      locked=true;
+
       const q=QUESTIONS[current];
-      const correct=q.correctIndex; const isRight=index===correct;
+      const correct=q.correctIndex; 
+      const isRight=index===correct;
       if(isRight) score++;
       updateScore();
 
-      feedback.innerHTML=`<h3>Deine Auswahl: <span class="tag ${isRight ? 'ok':'bad'}">${isRight?'Richtig':'Falsch'}</span></h3><div><strong>Ergebnis:</strong> ${q.results[index]}</div>`;
+      const bgColor = isRight ? '#24cf6b33' : '#ff4d4f33'; // leichtes grün oder rot
+      feedback.innerHTML = `
+        <div style="display:flex; gap:40px; align-items:center; justify-content:center; background:${bgColor}; padding:12px; border-radius:12px">
+          <div style="text-align:center">
+            <img src="${RANK_IMAGES[index]}" alt="Deine Auswahl" style="width:60px;height:60px">
+            <div style="margin-top:6px; font-weight:600">Deine Auswahl</div>
+          </div>
+          <div style="text-align:center">
+            <img src="${RANK_IMAGES[correct]}" alt="Richtiger Rang" style="width:60px;height:60px">
+            <div style="margin-top:6px; font-weight:600">Richtiger Rang</div>
+          </div>
+        </div>
+      `;
+
       feedback.classList.remove('hidden');
       nextBtn.classList.remove('hidden');
     }
