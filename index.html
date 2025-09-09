@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>YouTube Rank Quiz</title>
+  <title>Kuba</title>
   <style>
     :root {
       --bg: #000;
@@ -26,7 +26,6 @@
     }
     .container { width: min(100%, 980px); padding: 16px; }
 
-    /* Start-Screen */
     .center-card {
       display: grid; place-items: center;
       height: 70vh;
@@ -46,7 +45,6 @@
     .start-btn:hover { transform: translateY(-1px); filter: brightness(0.95); }
     .start-btn:active { transform: translateY(1px) scale(0.99); }
 
-    /* Quiz */
     .hidden { display: none !important; }
 
     .video-wrap {
@@ -63,8 +61,8 @@
     .answers {
       display: flex;
       justify-content: center;
-      flex-wrap: wrap;   /* alles in einer Reihe */
-      gap: 8px;            /* Abstand zwischen den Buttons */
+      flex-wrap: wrap;   
+      gap: 8px;            
       margin-top: 12px;
     }
 
@@ -75,8 +73,8 @@
       min-width: 70px;
       background: #222;
       color: #fff;
-      border: none;     /* Rand weg */
-      outline: none;    /* Fokus weg */
+      border: none;     
+      outline: none;    
     }
 
     .answer-btn img {
@@ -119,12 +117,10 @@
 <body>
   <main class="container">
 
-    <!-- Start Screen -->
     <section id="startScreen" class="center-card">
       <button class="start-btn" id="startBtn">Start</button>
     </section>
 
-    <!-- Quiz Screen -->
     <section id="quizScreen" class="hidden">
       <div class="video-wrap">
         <iframe id="ytFrame" src="" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
@@ -142,7 +138,6 @@
       </div>
     </section>
 
-    <!-- End Screen -->
     <section id="endScreen" class="center-card hidden">
       <div style="text-align:center">
         <h1 style="margin:0 0 8px">Fertig!</h1>
@@ -268,7 +263,7 @@
       if(isRight) score++;
       updateScore();
 
-      const bgColor = isRight ? '#24cf6b33' : '#ff4d4f33'; // leichtes grün oder rot
+      const bgColor = isRight ? '#24cf6b33' : '#ff4d4f33'; 
       feedback.innerHTML = `
         <div style="display:flex; gap:40px; align-items:center; justify-content:center; background:${bgColor}; padding:12px; border-radius:12px">
           <div style="text-align:center">
